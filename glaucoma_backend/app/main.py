@@ -1,0 +1,24 @@
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from app.routers import auth, patient, dashboard
+
+app = FastAPI(title="Glaucoma XAI Backend")
+
+# ✅ CORS FIX
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+# Routers
+app.include_router(auth.router)
+app.include_router(patient.router)
+app.include_router(dashboard.router)
+
+@app.get("/ping")
+def ping():
+    return {"status": "ok"}
