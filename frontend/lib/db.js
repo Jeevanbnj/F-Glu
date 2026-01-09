@@ -16,6 +16,9 @@ export async function getDb() {
   if (fs.existsSync(dbPath)) {
     const filebuffer = fs.readFileSync(dbPath);
     db = new SQL.Database(filebuffer);
+
+    // 🔥 ADD COLUMN IF MISSING (SAFE)
+   
   } else {
     db = new SQL.Database();
     db.run(`
@@ -29,6 +32,7 @@ export async function getDb() {
         iop TEXT,
         cdr TEXT,
         symptoms TEXT,
+        image_path TEXT,
         created_at TEXT
       )
     `);
@@ -37,6 +41,7 @@ export async function getDb() {
 
   return db;
 }
+
 
 export function saveDb() {
   const data = db.export();

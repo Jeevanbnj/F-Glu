@@ -22,6 +22,10 @@ export default function AddPatientPage() {
   const [uploading, setUploading] = useState(false);
   const [imagePath, setImagePath] = useState("");
 
+  // 🔥 Prediction popup state (ADDED)
+  const [showResult, setShowResult] = useState(false);
+  const [prediction, setPrediction] = useState(null);
+
   // Save patient
   const handleSavePatient = async () => {
     if (isSaved) return;
@@ -50,10 +54,10 @@ export default function AddPatientPage() {
     }
   };
 
-  // Upload image
+  // Upload image + link to patient
   const handleUploadImage = async () => {
-    if (!file) {
-      alert("Please select an image");
+    if (!file || !patientId) {
+      alert("Patient must be saved and image selected");
       return;
     }
 
@@ -62,19 +66,58 @@ export default function AddPatientPage() {
     const formData = new FormData();
     formData.append("file", file);
 
-    const res = await fetch("/api/upload", {
+    const uploadRes = await fetch("/api/upload", {
       method: "POST",
       body: formData,
     });
 
-    const data = await res.json();
+    const uploadData = await uploadRes.json();
+
+    if (!uploadRes.ok) {
+      setUploading(false);
+      alert(uploadData.error || "Image upload failed");
+      return;
+    }
+
+    const linkRes = await fetch("/api/patients/image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        patientId,
+        imagePath: uploadData.imagePath,
+      }),
+    });
+
     setUploading(false);
 
-    if (res.ok) {
-      setImagePath(data.imagePath);
-      alert("Image uploaded successfully");
+    if (linkRes.ok) {
+      setImagePath(uploadData.imagePath);
+      alert("Image uploaded & linked to patient successfully");
     } else {
-      alert(data.error || "Image upload failed");
+      alert("Image uploaded but linking failed");
+    }
+  };
+
+  // ✅ RUN AI PREDICTION (MODIFIED ONLY HERE)
+  const handleRunPrediction = async () => {
+    if (!imagePath) {
+      alert("Upload image first");
+      return;
+    }
+
+    const res = await fetch("/api/predict", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ imagePath }),
+    });
+
+    const data = await res.json();
+
+    if (res.ok) {
+      setPrediction(data);
+      setShowResult(true);
+    } else {
+      alert(data.error || "Prediction failed");
     }
   };
 
@@ -226,12 +269,6 @@ export default function AddPatientPage() {
           className="mb-4"
         />
 
-        {file && (
-          <p className="text-sm text-gray-500 mb-4">
-            Selected: {file.name}
-          </p>
-        )}
-
         <div className="flex justify-center gap-4">
           <button
             onClick={handleUploadImage}
@@ -242,6 +279,7 @@ export default function AddPatientPage() {
           </button>
 
           <button
+            onClick={handleRunPrediction}
             disabled={!imagePath}
             className="px-6 py-2 rounded-lg bg-green-600 text-white disabled:bg-gray-300"
           >
@@ -253,6 +291,40 @@ export default function AddPatientPage() {
       <p className="text-sm text-gray-400 text-center">
         AI-powered glaucoma prediction and analysis portal
       </p>
+
+      {/* 🔥 Prediction Popup */}
+      {showResult && prediction && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full p-6 relative">
+            <button
+              onClick={() => setShowResult(false)}
+              className="absolute top-4 right-4 text-gray-400"
+            >
+              ✕
+            </button>
+
+            <h2 className="text-2xl font-semibold mb-4">
+              Patient Glaucoma Prediction Results
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <h3 className="font-medium mb-2">Original Fundus Image</h3>
+                <img src={imagePath} className="rounded-lg border" />
+              </div>
+
+              <div className="flex flex-col justify-center">
+                <p className="text-lg font-semibold text-green-600">
+                  {prediction.diagnosis}
+                </p>
+                <p className="text-gray-600 mt-2">
+                  Confidence: {(prediction.confidence * 100).toFixed(0)}%
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
