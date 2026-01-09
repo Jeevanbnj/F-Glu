@@ -39,3 +39,23 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# ML models (too large for GitHub)
+*.keras
+*.h5
+*.pt
+*.pth
+
+# Uploaded images
+frontend/public/uploads/
+glaucoma_backend/uploads/
+glaucoma_backend/ml/last_prediction.txt
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Node
+node_modules/
+
+# Environment
+.env
