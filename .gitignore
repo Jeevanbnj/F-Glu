@@ -1,0 +1,29 @@
+# Node
+node_modules/
+.next/
+out/
+build/
+
+# Environment
+.env
+
+# ML models (too large)
+*.keras
+*.h5
+*.pt
+*.pth
+glaucoma_backend/ml/
+
+# Uploaded files
+frontend/public/uploads/
+glaucoma_backend/uploads/
+glaucoma_backend/ml/last_prediction.txt
+
+# Python cache
+__pycache__/
+*.pyc
+
+# OS
+.DS_Store
+frontend/public/uploads/
+glaucoma_backend/ml/glaucoma_best_model_ft2.keras
