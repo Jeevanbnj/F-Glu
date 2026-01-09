@@ -22,7 +22,7 @@ export default function AddPatientPage() {
   const [uploading, setUploading] = useState(false);
   const [imagePath, setImagePath] = useState("");
 
-  // 🔥 Prediction popup state (ADDED)
+  // 🔥 Prediction popup state
   const [showResult, setShowResult] = useState(false);
   const [prediction, setPrediction] = useState(null);
 
@@ -54,7 +54,7 @@ export default function AddPatientPage() {
     }
   };
 
-  // Upload image + link to patient
+  // Upload image + link
   const handleUploadImage = async () => {
     if (!file || !patientId) {
       alert("Patient must be saved and image selected");
@@ -98,7 +98,7 @@ export default function AddPatientPage() {
     }
   };
 
-  // ✅ RUN AI PREDICTION (MODIFIED ONLY HERE)
+  // 🔥 RUN AI PREDICTION
   const handleRunPrediction = async () => {
     if (!imagePath) {
       alert("Upload image first");
@@ -136,52 +136,28 @@ export default function AddPatientPage() {
           <h2 className="text-lg font-semibold mb-4">Patient Details</h2>
 
           <div className="space-y-4">
-            <input
-              className="input"
-              placeholder="Patient Name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              disabled={isSaved}
-            />
+            <input className="input" placeholder="Patient Name" value={name}
+              onChange={(e) => setName(e.target.value)} disabled={isSaved} />
 
-            <input
-              type="number"
-              className="input"
-              placeholder="Age"
-              value={age}
-              onChange={(e) => setAge(e.target.value)}
-              disabled={isSaved}
-            />
+            <input type="number" className="input" placeholder="Age" value={age}
+              onChange={(e) => setAge(e.target.value)} disabled={isSaved} />
 
             <div className="flex items-center gap-4">
               <span className="text-sm text-gray-600">Gender</span>
               <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={gender === "Male"}
-                  onChange={() => setGender("Male")}
-                  disabled={isSaved}
-                />
+                <input type="radio" checked={gender === "Male"}
+                  onChange={() => setGender("Male")} disabled={isSaved} />
                 Male
               </label>
               <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={gender === "Female"}
-                  onChange={() => setGender("Female")}
-                  disabled={isSaved}
-                />
+                <input type="radio" checked={gender === "Female"}
+                  onChange={() => setGender("Female")} disabled={isSaved} />
                 Female
               </label>
             </div>
 
-            <input
-              className="input"
-              placeholder="Patient ID"
-              value={patientId}
-              onChange={(e) => setPatientId(e.target.value)}
-              disabled={isSaved}
-            />
+            <input className="input" placeholder="Patient ID" value={patientId}
+              onChange={(e) => setPatientId(e.target.value)} disabled={isSaved} />
           </div>
         </div>
 
@@ -190,137 +166,104 @@ export default function AddPatientPage() {
           <h2 className="text-lg font-semibold mb-4">Clinical Info</h2>
 
           <div className="grid grid-cols-2 gap-4">
-            <input
-              className="input"
-              placeholder="IOP (mm Hg)"
-              value={iop}
-              onChange={(e) => setIop(e.target.value)}
-              disabled={isSaved}
-            />
+            <input className="input" placeholder="IOP (mm Hg)" value={iop}
+              onChange={(e) => setIop(e.target.value)} disabled={isSaved} />
 
-            <input
-              className="input"
-              placeholder="CDR"
-              value={cdr}
-              onChange={(e) => setCdr(e.target.value)}
-              disabled={isSaved}
-            />
+            <input className="input" placeholder="CDR" value={cdr}
+              onChange={(e) => setCdr(e.target.value)} disabled={isSaved} />
 
             <div className="col-span-2 flex items-center gap-4">
               <span className="text-sm text-gray-600">Eye</span>
               <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={eye === "Left"}
-                  onChange={() => setEye("Left")}
-                  disabled={isSaved}
-                />
+                <input type="radio" checked={eye === "Left"}
+                  onChange={() => setEye("Left")} disabled={isSaved} />
                 Left
               </label>
               <label className="flex items-center gap-2">
-                <input
-                  type="radio"
-                  checked={eye === "Right"}
-                  onChange={() => setEye("Right")}
-                  disabled={isSaved}
-                />
+                <input type="radio" checked={eye === "Right"}
+                  onChange={() => setEye("Right")} disabled={isSaved} />
                 Right
               </label>
             </div>
 
-            <input
-              className="input col-span-2"
-              placeholder="Symptoms"
-              value={symptoms}
-              onChange={(e) => setSymptoms(e.target.value)}
-              disabled={isSaved}
-            />
+            <input className="input col-span-2" placeholder="Symptoms"
+              value={symptoms} onChange={(e) => setSymptoms(e.target.value)}
+              disabled={isSaved} />
           </div>
         </div>
       </div>
 
-      {/* Save Button */}
+      {/* Buttons */}
       <div className="flex justify-center">
-        <button
-          onClick={handleSavePatient}
-          disabled={isSaved}
+        <button onClick={handleSavePatient} disabled={isSaved}
           className={`px-8 py-3 rounded-lg font-medium ${
-            isSaved
-              ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-              : "bg-blue-600 text-white"
-          }`}
-        >
+            isSaved ? "bg-gray-300 text-gray-500" : "bg-blue-600 text-white"
+          }`}>
           {isSaved ? "Patient Saved" : "Save Patient"}
         </button>
       </div>
 
-      {/* Fundus Upload */}
-      <div
-        className={`bg-white rounded-xl shadow-sm p-6 transition ${
-          !isSaved ? "opacity-40 pointer-events-none" : ""
-        }`}
-      >
+      {/* Upload */}
+      <div className={`bg-white rounded-xl shadow-sm p-6 ${
+        !isSaved ? "opacity-40 pointer-events-none" : ""
+      }`}>
         <h2 className="text-lg font-semibold mb-4">Fundus Image Upload</h2>
 
-        <input
-          type="file"
-          accept="image/*"
-          onChange={(e) => setFile(e.target.files[0])}
-          className="mb-4"
-        />
+        <input type="file" accept="image/*"
+          onChange={(e) => setFile(e.target.files[0])} className="mb-4" />
 
         <div className="flex justify-center gap-4">
-          <button
-            onClick={handleUploadImage}
-            disabled={uploading}
-            className="px-6 py-2 rounded-lg bg-blue-600 text-white"
-          >
+          <button onClick={handleUploadImage} disabled={uploading}
+            className="px-6 py-2 rounded-lg bg-blue-600 text-white">
             {uploading ? "Uploading..." : "Upload Image"}
           </button>
 
-          <button
-            onClick={handleRunPrediction}
-            disabled={!imagePath}
-            className="px-6 py-2 rounded-lg bg-green-600 text-white disabled:bg-gray-300"
-          >
+          <button onClick={handleRunPrediction} disabled={!imagePath}
+            className="px-6 py-2 rounded-lg bg-green-600 text-white disabled:bg-gray-300">
             Run AI Prediction
           </button>
         </div>
       </div>
 
-      <p className="text-sm text-gray-400 text-center">
-        AI-powered glaucoma prediction and analysis portal
-      </p>
-
-      {/* 🔥 Prediction Popup */}
+      {/* 🔥 MODIFIED PREDICTION MODAL */}
       {showResult && prediction && (
         <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl shadow-xl max-w-3xl w-full p-6 relative">
-            <button
-              onClick={() => setShowResult(false)}
-              className="absolute top-4 right-4 text-gray-400"
-            >
-              ✕
-            </button>
+          <div className="bg-white rounded-xl shadow-xl max-w-4xl w-full p-6 relative">
+            <button onClick={() => setShowResult(false)}
+              className="absolute top-4 right-4 text-gray-400">✕</button>
 
-            <h2 className="text-2xl font-semibold mb-4">
-              Patient Glaucoma Prediction Results
+            <h2 className="text-2xl font-semibold mb-6 text-center">
+              Glaucoma Prediction Result
             </h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Fundus */}
               <div>
-                <h3 className="font-medium mb-2">Original Fundus Image</h3>
-                <img src={imagePath} className="rounded-lg border" />
+                <p className="font-medium mb-2">Fundus Image</p>
+                <img src={imagePath} className="rounded-lg border w-full h-64 object-contain" />
               </div>
 
-              <div className="flex flex-col justify-center">
-                <p className="text-lg font-semibold text-green-600">
-                  {prediction.diagnosis}
-                </p>
-                <p className="text-gray-600 mt-2">
-                  Confidence: {(prediction.confidence * 100).toFixed(0)}%
-                </p>
+              {/* Grad-CAM */}
+              <div>
+                <p className="font-medium mb-2">Grad-CAM Heatmap</p>
+                <img
+                  src={prediction.gradcamPath}
+                  className="rounded-lg border w-full h-64 object-contain"
+                />
               </div>
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className={`text-xl font-semibold ${
+                prediction.diagnosis === "Glaucoma"
+                  ? "text-red-600"
+                  : "text-green-600"
+              }`}>
+                {prediction.diagnosis}
+              </p>
+              <p className="text-gray-600 mt-1">
+                Confidence: {(prediction.confidence * 100).toFixed(2)}%
+              </p>
             </div>
           </div>
         </div>

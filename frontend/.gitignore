@@ -1,51 +1,20 @@
-# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+# Node
+node_modules/
+.next/
+out/
+build/
 
-# dependencies
-/node_modules
-/.pnp
-.pnp.*
-.yarn/*
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
+# Environment
+.env
 
-# testing
-/coverage
-
-# next.js
-/.next/
-/out/
-
-# production
-/build
-
-# misc
-.DS_Store
-*.pem
-
-# debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.pnpm-debug.log*
-
-# env files (can opt-in for committing if needed)
-.env*
-
-# vercel
-.vercel
-
-# typescript
-*.tsbuildinfo
-next-env.d.ts
-# ML models (too large for GitHub)
+# ML models (too large)
 *.keras
 *.h5
 *.pt
 *.pth
+glaucoma_backend/ml/
 
-# Uploaded images
+# Uploaded files
 frontend/public/uploads/
 glaucoma_backend/uploads/
 glaucoma_backend/ml/last_prediction.txt
@@ -54,8 +23,7 @@ glaucoma_backend/ml/last_prediction.txt
 __pycache__/
 *.pyc
 
-# Node
-node_modules/
-
-# Environment
-.env
+# OS
+.DS_Store
+frontend/public/uploads/
+glaucoma_backend/ml/glaucoma_best_model_ft2.keras
