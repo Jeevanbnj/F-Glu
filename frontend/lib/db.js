@@ -17,8 +17,29 @@ export async function getDb() {
     const filebuffer = fs.readFileSync(dbPath);
     db = new SQL.Database(filebuffer);
 
-    // 🔥 ADD COLUMN IF MISSING (SAFE)
-   
+    // Check if records table exists, create if not
+    try {
+      const tables = db.exec("SELECT name FROM sqlite_master WHERE type='table' AND name='records'");
+      if (!tables.length) {
+        db.run(`
+          CREATE TABLE records (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            patientId TEXT,
+            patientName TEXT,
+            eye TEXT,
+            diagnosis TEXT,
+            confidence REAL,
+            fundusImagePath TEXT,
+            gradcamImagePath TEXT,
+            notes TEXT,
+            createdAt TEXT DEFAULT (datetime('now'))
+          )
+        `);
+        saveDb();
+      }
+    } catch (err) {
+      console.error("Error checking/creating records table:", err);
+    }
   } else {
     db = new SQL.Database();
     db.run(`
@@ -34,6 +55,20 @@ export async function getDb() {
         symptoms TEXT,
         image_path TEXT,
         created_at TEXT
+      )
+    `);
+    db.run(`
+      CREATE TABLE records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        patientId TEXT,
+        patientName TEXT,
+        eye TEXT,
+        diagnosis TEXT,
+        confidence REAL,
+        fundusImagePath TEXT,
+        gradcamImagePath TEXT,
+        notes TEXT,
+        createdAt TEXT DEFAULT (datetime('now'))
       )
     `);
     saveDb();

@@ -77,7 +77,7 @@ export async function POST(req) {
 
         resolve(
           NextResponse.json({
-            diagnosis: label === "normal" ? "Normal" : "Glaucoma",
+            diagnosis: label.toLowerCase(), // Pass through: "early" | "normal" | "advanced"
             confidence: Number(confidence),
             gradcamPath,
           })

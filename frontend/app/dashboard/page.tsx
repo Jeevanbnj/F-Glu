@@ -30,31 +30,72 @@ export default function DashboardPage() {
   });
 
   const [timelineData, setTimelineData] = useState<any[]>([]);
-  const [monthlyData, setMonthlyData] = useState<any[]>([]);
+  const [barData, setBarData] = useState<any[]>([]);
+  const [pieData, setPieData] = useState<any[]>([]);
 
   // ✅ DEFINE FUNCTION FIRST
   const fetchDashboard = async () => {
     try {
-      const summaryRes = await fetch(
-        "http://127.0.0.1:8000/api/dashboard/summary"
-      );
-      setSummary(await summaryRes.json());
+      // Fetch all records from the records table
+      const recordsRes = await fetch("/api/records");
+      const records = await recordsRes.json();
 
-      const timelineRes = await fetch(
-        "http://127.0.0.1:8000/api/dashboard/patients-over-time"
-      );
-      const timelineJson = await timelineRes.json();
-      setTimelineData(Array.isArray(timelineJson) ? timelineJson : []);
+      if (!Array.isArray(records)) {
+        console.error("Invalid records data");
+        return;
+      }
 
-      const monthRes = await fetch(
-        "http://127.0.0.1:8000/api/dashboard/patients-by-month"
-      );
-      const monthJson = await monthRes.json();
-      setMonthlyData(Array.isArray(monthJson) ? monthJson : []);
+      // Calculate summary from records
+      const total = records.length;
+      const normal = records.filter((r: any) => r.diagnosis?.toLowerCase() === "normal").length;
+      const early = records.filter((r: any) => r.diagnosis?.toLowerCase() === "early").length;
+      const advanced = records.filter((r: any) => r.diagnosis?.toLowerCase() === "advanced").length;
+
+      setSummary({
+        total_patients: total,
+        normal,
+        early,
+        advanced,
+      });
+
+      // Prepare timeline data (patients over time)
+      const dateCounts: { [key: string]: number } = {};
+      records.forEach((record: any) => {
+        try {
+          const date = new Date(record.createdAt);
+          const dateKey = date.toLocaleDateString("en-US", { year: "numeric", month: "short", day: "numeric" });
+          dateCounts[dateKey] = (dateCounts[dateKey] || 0) + 1;
+        } catch (e) {
+          // Skip invalid dates
+        }
+      });
+
+      const timeline = Object.entries(dateCounts)
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+      
+      setTimelineData(timeline);
+
+      // Prepare bar chart data
+      const bar = [
+        { stage: "Normal", value: normal },
+        { stage: "Early", value: early },
+        { stage: "Advanced", value: advanced },
+      ];
+      setBarData(bar);
+
+      // Prepare pie chart data
+      const pie = [
+        { name: "Normal", value: normal },
+        { name: "Early", value: early },
+        { name: "Advanced", value: advanced },
+      ];
+      setPieData(pie);
     } catch (err) {
-      console.error(err);
+      console.error("Error fetching dashboard data:", err);
       setTimelineData([]);
-      setMonthlyData([]);
+      setBarData([]);
+      setPieData([]);
     }
   };
 
@@ -72,18 +113,6 @@ export default function DashboardPage() {
     month: "long",
     year: "numeric",
   });
-
-  const barData = [
-    { stage: "Normal", value: summary.normal },
-    { stage: "Early", value: summary.early },
-    { stage: "Advanced", value: summary.advanced },
-  ];
-
-  const pieData = [
-    { name: "Normal", value: summary.normal },
-    { name: "Early", value: summary.early },
-    { name: "Advanced", value: summary.advanced },
-  ];
 
   return (
     <div>
@@ -138,52 +167,56 @@ export default function DashboardPage() {
         <div className="bg-white border p-5 rounded-lg h-[350px]">
           <h2 className="mb-4 font-medium">Glaucoma Stage Count</h2>
           <div className="h-[300px]">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart
-              data={barData}
-              margin={{ top: 20, right: 20, left: 0, bottom: 30 }}
->
-            <CartesianGrid strokeDasharray="3 3" vertical={false} />
-
-              <XAxis
-                dataKey="stage"
-                tickMargin={10}
-                axisLine={false}
-                tickLine={false}
-              />
-              <YAxis
-                allowDecimals={false}
-                axisLine={false}
-                tickLine={false}
-              />
-
-              <Tooltip />
-            <Bar
-    dataKey="value"
-    fill="#2563eb"
-    radius={[6, 6, 0, 0]}
-    barSize={40}
-  />
-</BarChart>
-
-  </ResponsiveContainer>
-</div>
-
+            {barData.length === 0 ? (
+              <p className="text-center text-slate-400 mt-24">No data</p>
+            ) : (
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart
+                  data={barData}
+                  margin={{ top: 20, right: 20, left: 0, bottom: 30 }}
+                >
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} />
+                  <XAxis
+                    dataKey="stage"
+                    tickMargin={10}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <YAxis
+                    allowDecimals={false}
+                    axisLine={false}
+                    tickLine={false}
+                  />
+                  <Tooltip />
+                  <Bar
+                    dataKey="value"
+                    fill="#2563eb"
+                    radius={[6, 6, 0, 0]}
+                    barSize={40}
+                  />
+                </BarChart>
+              </ResponsiveContainer>
+            )}
+          </div>
         </div>
       </div>
 
       <div className="bg-white border p-5 rounded-lg mt-6 h-[350px]">
         <h2 className="mb-4 font-medium">Glaucoma Stage Percentage</h2>
-        <ResponsiveContainer width="60%" height="100%">
-          <PieChart>
-            <Pie data={pieData} dataKey="value" outerRadius={120} label>
-              {pieData.map((_, i) => (
-                <Cell key={i} fill={COLORS[i]} />
-              ))}
-            </Pie>
-            <Tooltip />
-          </PieChart>
-        </ResponsiveContainer>
+        {pieData.length === 0 || pieData.every((d) => d.value === 0) ? (
+          <p className="text-center text-slate-400 mt-24">No data</p>
+        ) : (
+          <ResponsiveContainer width="60%" height="100%">
+            <PieChart>
+              <Pie data={pieData} dataKey="value" outerRadius={120} label>
+                {pieData.map((_, i) => (
+                  <Cell key={i} fill={COLORS[i]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
