@@ -36,8 +36,21 @@ export default function DashboardPage() {
   // ✅ DEFINE FUNCTION FIRST
   const fetchDashboard = async () => {
     try {
-      // Fetch all records from the records table
-      const recordsRes = await fetch("/api/records");
+      const doctorEmail = localStorage.getItem("doctor_email");
+      
+      if (!doctorEmail) {
+        console.error("Doctor email not found");
+        return;
+      }
+
+      // Fetch records filtered by doctorEmail
+      const recordsRes = await fetch(`/api/records?doctorEmail=${encodeURIComponent(doctorEmail)}`);
+      
+      if (!recordsRes.ok) {
+        console.error("Failed to fetch records");
+        return;
+      }
+
       const records = await recordsRes.json();
 
       if (!Array.isArray(records)) {

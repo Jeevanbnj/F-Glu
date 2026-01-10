@@ -32,13 +32,36 @@ export async function getDb() {
             fundusImagePath TEXT,
             gradcamImagePath TEXT,
             notes TEXT,
+            doctorEmail TEXT,
             createdAt TEXT DEFAULT (datetime('now'))
           )
         `);
         saveDb();
+      } else {
+        // Add doctorEmail column if it doesn't exist
+        try {
+          db.exec("SELECT doctorEmail FROM records LIMIT 1");
+        } catch (err) {
+          // Column doesn't exist, add it
+          db.run("ALTER TABLE records ADD COLUMN doctorEmail TEXT");
+          saveDb();
+        }
       }
     } catch (err) {
       console.error("Error checking/creating records table:", err);
+    }
+
+    // Add doctorEmail column to patients table if it doesn't exist
+    try {
+      db.exec("SELECT doctorEmail FROM patients LIMIT 1");
+    } catch (err) {
+      // Column doesn't exist, add it
+      try {
+        db.run("ALTER TABLE patients ADD COLUMN doctorEmail TEXT");
+        saveDb();
+      } catch (alterErr) {
+        console.error("Error adding doctorEmail to patients table:", alterErr);
+      }
     }
   } else {
     db = new SQL.Database();
@@ -54,6 +77,7 @@ export async function getDb() {
         cdr TEXT,
         symptoms TEXT,
         image_path TEXT,
+        doctorEmail TEXT,
         created_at TEXT
       )
     `);
@@ -68,6 +92,7 @@ export async function getDb() {
         fundusImagePath TEXT,
         gradcamImagePath TEXT,
         notes TEXT,
+        doctorEmail TEXT,
         createdAt TEXT DEFAULT (datetime('now'))
       )
     `);

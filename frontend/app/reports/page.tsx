@@ -27,12 +27,21 @@ export default function ReportsPage() {
   const fetchRecords = async () => {
     try {
       setLoading(true);
-      const res = await fetch("/api/records");
+      const doctorEmail = localStorage.getItem("doctor_email");
+      
+      if (!doctorEmail) {
+        alert("Please log in to view reports");
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`/api/records?doctorEmail=${encodeURIComponent(doctorEmail)}`);
       if (res.ok) {
         const data = await res.json();
         setRecords(data);
       } else {
-        console.error("Failed to fetch records");
+        const errorData = await res.json().catch(() => ({ error: "Failed to fetch records" }));
+        console.error("Failed to fetch records:", errorData);
       }
     } catch (error) {
       console.error("Error fetching records:", error);

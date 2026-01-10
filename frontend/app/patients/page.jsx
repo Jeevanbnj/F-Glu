@@ -33,6 +33,12 @@ export default function AddPatientPage() {
   const handleSavePatient = async () => {
     if (isSaved) return;
 
+    const doctorEmail = localStorage.getItem("doctor_email");
+    if (!doctorEmail) {
+      alert("Please log in to save patient");
+      return;
+    }
+
     const res = await fetch("/api/patients", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -45,6 +51,7 @@ export default function AddPatientPage() {
         iop,
         cdr,
         symptoms,
+        doctorEmail,
       }),
     });
 
@@ -100,12 +107,20 @@ export default function AddPatientPage() {
       return;
     }
 
+    const doctorEmail = localStorage.getItem("doctor_email");
+    if (!doctorEmail) {
+      setUploading(false);
+      alert("Please log in to link image");
+      return;
+    }
+
     const linkRes = await fetch("/api/patients/image", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         patientId,
         imagePath: uploadData.imagePath,
+        doctorEmail,
       }),
     });
 
@@ -209,6 +224,12 @@ export default function AddPatientPage() {
       return;
     }
 
+    const doctorEmail = localStorage.getItem("doctor_email");
+    if (!doctorEmail) {
+      alert("Please log in to save report");
+      return;
+    }
+
     try {
       const res = await fetch("/api/records", {
         method: "POST",
@@ -222,6 +243,7 @@ export default function AddPatientPage() {
           fundusImagePath: imagePath,
           gradcamImagePath: prediction.gradcamPath,
           notes: "",
+          doctorEmail,
         }),
       });
 

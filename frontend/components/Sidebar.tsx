@@ -7,7 +7,6 @@ import { useEffect, useState } from "react";
 const menu = [
   { name: "Dashboard", href: "/dashboard" },
   { name: "Patients", href: "/patients" },
-  { name: "Predictions", href: "/predictions" },
   { name: "Reports", href: "/reports" },
   { name: "Model Info", href: "/model-info" },   // ✅ added
   { name: "Contact", href: "/contact" },         // ✅ added

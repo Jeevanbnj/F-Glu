@@ -5,21 +5,29 @@ import { getDb, saveDb } from "@/lib/db";
 /* =========================
    GET ALL RECORDS
    ========================= */
-export async function GET() {
+export async function GET(req) {
   try {
+    const { searchParams } = new URL(req.url);
+    const doctorEmail = searchParams.get("doctorEmail");
+
+    if (!doctorEmail) {
+      return new Response(
+        JSON.stringify({ error: "doctorEmail is required" }),
+        { status: 400 }
+      );
+    }
+
     const db = await getDb();
-    const result = db.exec("SELECT * FROM records ORDER BY createdAt DESC");
-
-    if (!result.length) return Response.json([]);
-
-    const columns = result[0].columns;
-    const values = result[0].values;
-
-    const records = values.map((row) =>
-      Object.fromEntries(
-        row.map((value, index) => [columns[index], value])
-      )
-    );
+    // Filter by doctorEmail using prepared statement for security
+    const stmt = db.prepare("SELECT * FROM records WHERE doctorEmail = ? ORDER BY createdAt DESC");
+    stmt.bind([doctorEmail]);
+    
+    const records = [];
+    while (stmt.step()) {
+      const row = stmt.getAsObject();
+      records.push(row);
+    }
+    stmt.free();
 
     return Response.json(records);
   } catch (error) {
@@ -48,11 +56,12 @@ export async function POST(req) {
       fundusImagePath,
       gradcamImagePath,
       notes = "",
+      doctorEmail,
     } = body;
 
-    if (!patientId || !diagnosis || confidence === undefined) {
+    if (!patientId || !diagnosis || confidence === undefined || !doctorEmail) {
       return new Response(
-        JSON.stringify({ error: "Missing required fields" }),
+        JSON.stringify({ error: "Missing required fields (patientId, diagnosis, confidence, doctorEmail)" }),
         { status: 400 }
       );
     }
@@ -60,8 +69,8 @@ export async function POST(req) {
     db.run(
       `
       INSERT INTO records
-      (patientId, patientName, eye, diagnosis, confidence, fundusImagePath, gradcamImagePath, notes, createdAt)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      (patientId, patientName, eye, diagnosis, confidence, fundusImagePath, gradcamImagePath, notes, doctorEmail, createdAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
       `,
       [
         patientId,
@@ -72,6 +81,7 @@ export async function POST(req) {
         fundusImagePath || "",
         gradcamImagePath || "",
         notes || "",
+        doctorEmail,
       ]
     );
 

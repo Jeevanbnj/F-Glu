@@ -5,23 +5,30 @@ import { getDb, saveDb } from "@/lib/db";
 /* =========================
    GET ALL PATIENTS
    ========================= */
-export async function GET() {
+export async function GET(req) {
   try {
+    const { searchParams } = new URL(req.url);
+    const doctorEmail = searchParams.get("doctorEmail");
+
+    if (!doctorEmail) {
+      return new Response(
+        JSON.stringify({ error: "doctorEmail is required" }),
+        { status: 400 }
+      );
+    }
+
     const db = await getDb();
-    const result = db.exec("SELECT * FROM patients");
-
-    // sql.js returns rows in a special format
-    if (!result.length) return Response.json([]);
-
-    const columns = result[0].columns;
-    const values = result[0].values;
-
-    const patients = values.map((row) =>
-      Object.fromEntries(
-        row.map((value, index) => [columns[index], value])
-      )
-    );
-
+    // Filter by doctorEmail using prepared statement for security
+    const stmt = db.prepare("SELECT * FROM patients WHERE doctorEmail = ?");
+    stmt.bind([doctorEmail]);
+    
+    const patients = [];
+    while (stmt.step()) {
+      const row = stmt.getAsObject();
+      patients.push(row);
+    }
+    stmt.free();
+    
     return Response.json(patients);
   } catch (error) {
     console.error(error);
@@ -49,13 +56,21 @@ export async function POST(req) {
       iop,
       cdr,
       symptoms,
+      doctorEmail,
     } = body;
+
+    if (!doctorEmail) {
+      return new Response(
+        JSON.stringify({ error: "doctorEmail is required" }),
+        { status: 400 }
+      );
+    }
 
     db.run(
       `
       INSERT INTO patients
-      (patient_id, name, age, gender, eye, iop, cdr, symptoms, created_at)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+      (patient_id, name, age, gender, eye, iop, cdr, symptoms, doctorEmail, created_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
       `,
       [
         patientId,
@@ -66,6 +81,7 @@ export async function POST(req) {
         iop,
         cdr,
         symptoms,
+        doctorEmail,
       ]
     );
 
