@@ -8,7 +8,7 @@ build/
 .env
 
 # ML models (too large)
-!*.keras
+*.keras
 *.h5
 *.pt
 *.pth
@@ -26,4 +26,4 @@ __pycache__/
 # OS
 .DS_Store
 frontend/public/uploads/
-!glaucoma_backend/ml/glaucoma_best_model_ft2.keras
+glaucoma_backend/ml/glaucoma_best_model_ft2.keras
